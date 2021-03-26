@@ -19,7 +19,19 @@ defmodule ScenicNervesImageExample.Scene.SysInfo do
   to the UART pins.
   """
 
+  @parrot_path :code.priv_dir(:scenic_nerves_image_example)
+               |> Path.join("/static/images/scenic_parrot.png")
+  @parrot_hash Scenic.Cache.Support.Hash.file!(@parrot_path, :sha)
+
+  @parrot_width 62
+  @parrot_height 114
+
   @graph Graph.build(font_size: 22, font: :roboto_mono)
+         |> rect(
+           {@parrot_width, @parrot_height},
+           id: :parrot,
+           fill: {:image, {@parrot_hash, 255}}
+         )
          |> group(
            fn g ->
              g
@@ -66,6 +78,8 @@ defmodule ScenicNervesImageExample.Scene.SysInfo do
     size: #{inspect(Map.get(info, :size))}
     """
 
+    Scenic.Cache.Static.Texture.load(@parrot_path, @parrot_hash)
+
     # styles: #{stringify_map(Map.get(info, :styles, %{a: 1, b: 2}))}
     # transforms: #{stringify_map(Map.get(info, :transforms, %{}))}
     # drivers: #{stringify_map(Map.get(info, :drivers))}
@@ -74,6 +88,7 @@ defmodule ScenicNervesImageExample.Scene.SysInfo do
       @graph
       |> Graph.modify(:vp_info, &text(&1, vp_info))
       |> Graph.modify(:device_list, &update_opts(&1, hidden: @target == "host"))
+      |> Graph.modify(:parrot, &update_opts(&1, translate: {23, 23}))
 
     unless @target == "host" do
       # subscribe to the simulated temperature sensor
